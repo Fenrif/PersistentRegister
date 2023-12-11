@@ -1,6 +1,6 @@
-namespace PersistentRegister.Models
+namespace PersistentRegister.Dtos.User
 {
-    public class User
+    public class GetUserDto
     {
         public Guid ID { get; set; }
         public string Email { get; set; }
