@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using PersistentRegister.Models;
 
 namespace PersistentRegister.Repositories
 {
@@ -8,5 +9,7 @@ namespace PersistentRegister.Repositories
         {
             
         }
+
+        public DbSet<User> User { get; set; }
     }
 }
