@@ -109,6 +109,15 @@ namespace PersistentRegister.Services
             try
             {
                 var user = _mapper.Map<User>(newUser);
+
+                var emailAlreadyExists = await _userRepository.IsEmailUniqueAsync(user.Email);
+                if (emailAlreadyExists.Data)
+                {
+                    serviceResponse.Success = false;
+                    serviceResponse.Message = "Email already exists.";
+                    return serviceResponse;
+                }
+
                 var repositoryResponse = await _userRepository.InsertAsync(user);
 
                 if (!repositoryResponse.Success)
