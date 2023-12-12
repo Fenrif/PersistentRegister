@@ -4,7 +4,7 @@ using PersistentRegister.Models;
 
 namespace PersistentRegister.Repositories
 {
-    public class UserRepository : IRepository<User>
+    public class UserRepository : IUserRepository
     {
         private readonly DataContext _context;
 
