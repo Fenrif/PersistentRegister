@@ -30,10 +30,10 @@ namespace PersistentRegister.Repositories
                 await _context.SaveChangesAsync();
                 apiResponse.Message = "User deleted successfully.";
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
                 apiResponse.Success = false;
-                apiResponse.Message = e.Message;
+                apiResponse.Message = ex.Message;
             }
 
             return apiResponse;
@@ -48,10 +48,10 @@ namespace PersistentRegister.Repositories
                 var users = await _context.User.ToListAsync();
                 apiResponse.Data = users;
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
                 apiResponse.Success = false;
-                apiResponse.Message = e.Message;
+                apiResponse.Message = ex.Message;
             }
 
             return apiResponse;
@@ -66,10 +66,10 @@ namespace PersistentRegister.Repositories
                 var user = await _context.User.FirstOrDefaultAsync(u => u.ID == id);
                 apiResponse.Data = user;
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
                 apiResponse.Success = false;
-                apiResponse.Message = e.Message;
+                apiResponse.Message = ex.Message;
             }
 
             return apiResponse;
@@ -86,10 +86,10 @@ namespace PersistentRegister.Repositories
                 apiResponse.Data = user;
                 apiResponse.Message = "User inserted successfully.";
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
                 apiResponse.Success = false;
-                apiResponse.Message = e.Message;
+                apiResponse.Message = ex.Message;
             }
             return apiResponse;
         }
@@ -103,10 +103,10 @@ namespace PersistentRegister.Repositories
                 bool isUnique = await _context.User.AnyAsync(u => u.Email == email);
                 apiResponse.Data = isUnique;
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
                 apiResponse.Success = false;
-                apiResponse.Message = e.Message;
+                apiResponse.Message = ex.Message;
             }
 
             return apiResponse;
@@ -123,10 +123,10 @@ namespace PersistentRegister.Repositories
                 apiResponse.Data = user;
                 apiResponse.Message = "User updated successfully.";
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
                 apiResponse.Success = false;
-                apiResponse.Message = e.Message;
+                apiResponse.Message = ex.Message;
             }
             return apiResponse;
         }
