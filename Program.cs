@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PersistentRegister.Interfaces;
 using PersistentRegister.Repositories;
+using PersistentRegister.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,7 @@ builder.Services.AddSwaggerGen();
 
 #region DI
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserService, UserService>();
 #endregion
 
 var app = builder.Build();
