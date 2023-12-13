@@ -47,6 +47,7 @@ namespace PersistentRegister.Repositories
             {
                 var users = await _context.User.ToListAsync();
                 apiResponse.Data = users;
+                apiResponse.Message = users.Count > 0 ? "Users retrieved successfully." : "No users found.";
             }
             catch (Exception ex)
             {

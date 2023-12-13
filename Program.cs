@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using PersistentRegister;
 using PersistentRegister.Interfaces;
 using PersistentRegister.Repositories;
 using PersistentRegister.Services;
@@ -15,10 +16,12 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
 #region DI
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
+
 #endregion
 
 var app = builder.Build();

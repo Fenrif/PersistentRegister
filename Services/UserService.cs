@@ -61,7 +61,7 @@ namespace PersistentRegister.Services
                 {
                     var users = _mapper.Map<List<GetUserDto>>(repositoryResponse.Data);
                     serviceResponse.Data = users;
-                    serviceResponse.Message = "Users retrieved successfully.";
+                    serviceResponse.Message = repositoryResponse.Message;
                 }
             }
             catch (Exception ex)
@@ -89,7 +89,6 @@ namespace PersistentRegister.Services
                 {
                     var user = _mapper.Map<GetUserDto>(repositoryResponse.Data);
                     serviceResponse.Data = user;
-                    serviceResponse.Message = "User retrieved successfully.";
                 }
 
             }
