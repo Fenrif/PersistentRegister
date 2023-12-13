@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using PersistentRegister.Interfaces;
 using PersistentRegister.Models;
 
@@ -7,10 +8,12 @@ namespace PersistentRegister.Repositories
     public class UserRepository : IUserRepository
     {
         private readonly DataContext _context;
+        private readonly IConfiguration _configuration;
 
-        public UserRepository(DataContext context)
+        public UserRepository(DataContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         public async Task<ApiResponse<bool>> DeleteAsync(Guid id)
@@ -79,20 +82,30 @@ namespace PersistentRegister.Repositories
         public async Task<ApiResponse<User>> InsertAsync(User user)
         {
             var apiResponse = new ApiResponse<User>();
+            using (var transaction = _context.Database.BeginTransaction())
+            {
+                try
+                {
+                    _context.User.Add(user);
+                    await _context.SaveChangesAsync();
 
-            try
-            {
-                _context.User.Add(user);
-                await _context.SaveChangesAsync();
-                apiResponse.Data = user;
-                apiResponse.Message = "User inserted successfully.";
+                    string filePath = _configuration["AppSettings:FileStorageFile"];
+                    List<User> existingUsers = LoadJsonData(filePath);
+                    SaveJsonData(existingUsers, user, filePath);
+
+                    await transaction.CommitAsync();
+
+                    apiResponse.Data = user;
+                    apiResponse.Message = "User inserted successfully.";
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    apiResponse.Success = false;
+                    apiResponse.Message = ex.Message;
+                }
+                return apiResponse;
             }
-            catch (Exception ex)
-            {
-                apiResponse.Success = false;
-                apiResponse.Message = ex.Message;
-            }
-            return apiResponse;
         }
 
         public async Task<ApiResponse<bool>> IsEmailUniqueAsync(string email)
@@ -131,5 +144,42 @@ namespace PersistentRegister.Repositories
             }
             return apiResponse;
         }
+
+        #region Helpers
+        public List<User> LoadJsonData(string filePath)
+        {
+            if (!Directory.Exists(Path.GetDirectoryName(filePath)))
+                Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+
+            if (!File.Exists(filePath))
+                File.Create(filePath).Close();
+
+            string jsonContent = File.ReadAllText(filePath);
+            List<User> existingUsers = JsonConvert.DeserializeObject<List<User>>(jsonContent) ?? new List<User>();
+
+            return existingUsers;
+        }
+
+        public async void SaveJsonData(List<User> existingUsers, User user, string filePath)
+        {
+            try
+            {
+                //throw new Exception("Error saving data to JSON file");
+                existingUsers.Add(user);
+
+                string json = JsonConvert.SerializeObject(existingUsers, Formatting.Indented);
+
+                using (StreamWriter writer = new StreamWriter(filePath, true))
+                {
+                    await File.WriteAllTextAsync(filePath, json);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error saving data to JSON file", ex);
+            }
+
+        }
+        #endregion
     }
 }
