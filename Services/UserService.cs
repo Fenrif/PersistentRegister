@@ -2,7 +2,7 @@ using AutoMapper;
 using PersistentRegister.Dtos.User;
 using PersistentRegister.Interfaces;
 using PersistentRegister.Models;
-using PersistentRegister.Repositories;
+using Serilog;
 
 namespace PersistentRegister.Services
 {
@@ -28,17 +28,20 @@ namespace PersistentRegister.Services
                 {
                     serviceResponse.Success = false;
                     serviceResponse.Message = repositoryResponse.Message;
+                    Log.Error(serviceResponse.Message);
                 }
                 else
                 {
                     serviceResponse.Data = true;
-                    serviceResponse.Message = "User deleted successfully.";
+                    serviceResponse.Message = SuccessMessages.UserDeleted;
+                    Log.Information(serviceResponse.Message);
                 }
             }
             catch (Exception ex)
             {
                 serviceResponse.Success = false;
                 serviceResponse.Message = ex.Message;
+                Log.Error(serviceResponse.Message);
             }
 
             return serviceResponse;
@@ -56,18 +59,21 @@ namespace PersistentRegister.Services
                 {
                     serviceResponse.Success = false;
                     serviceResponse.Message = repositoryResponse.Message;
+                    Log.Error(serviceResponse.Message);
                 }
                 else
                 {
                     var users = _mapper.Map<List<GetUserDto>>(repositoryResponse.Data);
                     serviceResponse.Data = users;
                     serviceResponse.Message = repositoryResponse.Message;
+                    Log.Information(serviceResponse.Message);
                 }
             }
             catch (Exception ex)
             {
                 serviceResponse.Success = false;
                 serviceResponse.Message = ex.Message;
+                Log.Error(serviceResponse.Message);
             }
 
             return serviceResponse;
@@ -85,10 +91,13 @@ namespace PersistentRegister.Services
                 {
                     serviceResponse.Success = false;
                     serviceResponse.Message = repositoryResponse.Message;
-                } else
+                    Log.Error(serviceResponse.Message);
+                } 
+                else
                 {
                     var user = _mapper.Map<GetUserDto>(repositoryResponse.Data);
                     serviceResponse.Data = user;
+                    Log.Information(serviceResponse.Message);
                 }
 
             }
@@ -113,7 +122,8 @@ namespace PersistentRegister.Services
                 if (emailAlreadyExists.Data)
                 {
                     serviceResponse.Success = false;
-                    serviceResponse.Message = "Email already exists.";
+                    serviceResponse.Message = string.Format(ErrorMessages.EmailExists, user.Email);
+                    Log.Information(ErrorMessages.EmailExists, user.Email);
                     return serviceResponse;
                 }
 
@@ -123,18 +133,20 @@ namespace PersistentRegister.Services
                 {
                     serviceResponse.Success = false;
                     serviceResponse.Message = repositoryResponse.Message;
+                    Log.Error(repositoryResponse.Message);
                 }
                 else
                 {
                     var userDto = _mapper.Map<GetUserDto>(repositoryResponse.Data);
                     serviceResponse.Data = userDto; 
-                    serviceResponse.Message = "User inserted successfully.";
+                    serviceResponse.Message = SuccessMessages.UserInserted;
                 }
             }
             catch (Exception ex)
             {
                 serviceResponse.Success = false;
                 serviceResponse.Message = ex.Message;
+                Log.Error(ex.Message, ErrorMessages.RegisterError);
             }
 
             return serviceResponse;
@@ -158,7 +170,7 @@ namespace PersistentRegister.Services
                 {
                     var userDto = _mapper.Map<GetUserDto>(repositoryResponse.Data);
                     serviceResponse.Data = userDto;
-                    serviceResponse.Message = "User updated successfully.";
+                    serviceResponse.Message = SuccessMessages.UserUpdated;
                 }
             }
             catch (Exception ex)

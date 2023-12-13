@@ -50,7 +50,7 @@ namespace PersistentRegister.Repositories
             {
                 var users = await _context.User.ToListAsync();
                 apiResponse.Data = users;
-                apiResponse.Message = users.Count > 0 ? "Users retrieved successfully." : "No users found.";
+                apiResponse.Message = users.Count > 0 ? SuccessMessages.UsersRetrieved : InformationMessages.NoUsersFound;
             }
             catch (Exception ex)
             {
@@ -96,7 +96,7 @@ namespace PersistentRegister.Repositories
                     await transaction.CommitAsync();
 
                     apiResponse.Data = user;
-                    apiResponse.Message = "User inserted successfully.";
+                    apiResponse.Message = SuccessMessages.UserInserted;
                 }
                 catch (Exception ex)
                 {
@@ -135,7 +135,7 @@ namespace PersistentRegister.Repositories
                 _context.User.Update(user);
                 await _context.SaveChangesAsync();
                 apiResponse.Data = user;
-                apiResponse.Message = "User updated successfully.";
+                apiResponse.Message = SuccessMessages.UserUpdated;
             }
             catch (Exception ex)
             {
@@ -176,7 +176,7 @@ namespace PersistentRegister.Repositories
             }
             catch (Exception ex)
             {
-                throw new Exception("Error saving data to JSON file", ex);
+                throw new Exception(ErrorMessages.SavingJson, ex);
             }
 
         }
