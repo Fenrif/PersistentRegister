@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using PersistentRegister.Interfaces;
 using PersistentRegister.Models;
+using Serilog;
 
 namespace PersistentRegister.Repositories
 {
@@ -18,27 +19,34 @@ namespace PersistentRegister.Repositories
 
         public async Task<ApiResponse<bool>> DeleteAsync(Guid id)
         {
-
             var apiResponse = new ApiResponse<bool>();
-
-            try
+            using (var transaction = await _context.Database.BeginTransactionAsync())
             {
-                var user = await _context.User.FirstOrDefaultAsync(u => u.ID == id);
-                if (user is null)
+                try
                 {
-                    throw new Exception($"User with Id '{id}' not found.");
+                    var user = await _context.User.FirstOrDefaultAsync(u => u.ID == id);
+                    if (user is null)
+                    {
+                        throw new Exception($"User with Id '{id}' not found.");
+                    }
+
+                    _context.User.Remove(user);
+                    await _context.SaveChangesAsync();
+                    apiResponse.Message = "User deleted successfully.";
+
+                    string filePath = _configuration["AppSettings:FileStorageFile"];
+                    List<User> existingUsers = LoadJsonData(filePath);
+                    DeleteUserFromJson(existingUsers, id, filePath);
+
+                    await transaction.CommitAsync();
                 }
-
-                _context.User.Remove(user);
-                await _context.SaveChangesAsync();
-                apiResponse.Message = "User deleted successfully.";
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    apiResponse.Success = false;
+                    apiResponse.Message = ex.Message;
+                }
             }
-            catch (Exception ex)
-            {
-                apiResponse.Success = false;
-                apiResponse.Message = ex.Message;
-            }
-
             return apiResponse;
         }
 
@@ -82,7 +90,7 @@ namespace PersistentRegister.Repositories
         public async Task<ApiResponse<User>> InsertAsync(User user)
         {
             var apiResponse = new ApiResponse<User>();
-            using (var transaction = _context.Database.BeginTransaction())
+            using (var transaction = await _context.Database.BeginTransactionAsync())
             {
                 try
                 {
@@ -160,18 +168,40 @@ namespace PersistentRegister.Repositories
             return existingUsers;
         }
 
-        public async void SaveJsonData(List<User> existingUsers, User user, string filePath)
+        public void SaveJsonData(List<User> existingUsers, User user, string filePath)
         {
             try
             {
-                //throw new Exception("Error saving data to JSON file");
+                // throw new Exception("Error saving data to JSON file");
                 existingUsers.Add(user);
 
                 string json = JsonConvert.SerializeObject(existingUsers, Formatting.Indented);
 
                 using (StreamWriter writer = new StreamWriter(filePath, true))
                 {
-                    await File.WriteAllTextAsync(filePath, json);
+                    File.WriteAllText(filePath, json);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ErrorMessages.SavingJson, ex);
+            }
+
+        }
+
+        public void DeleteUserFromJson(List<User> existingUsers, Guid userID, string filePath)
+        {
+            try
+            {
+                var userToDeleted = existingUsers.FirstOrDefault(user => user.ID == userID);
+
+                existingUsers.Remove(userToDeleted);
+
+                string json = JsonConvert.SerializeObject(existingUsers, Formatting.Indented);
+
+                using (StreamWriter writer = new StreamWriter(filePath, true))
+                {
+                    File.WriteAllText(filePath, json);
                 }
             }
             catch (Exception ex)
