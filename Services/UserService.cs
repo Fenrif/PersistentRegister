@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using System.Net;
 using System.Text;
+using ApiLibrary.Responses;
+using ApiLibrary.TextConstants;
 using AutoMapper;
 using Newtonsoft.Json;
 using PersistentRegister.Dtos.User;
@@ -21,6 +23,19 @@ namespace PersistentRegister.Services
         private readonly HttpClient _httpClient;
         private readonly string endPoint2;
         private readonly string endPoint3;
+        //Set the Retry Policy using Polly
+        private AsyncRetryPolicy<HttpResponseMessage> retryPolicy = Policy<HttpResponseMessage>
+                                                .Handle<Exception>()
+                                                .OrResult(x => x.StatusCode is >= HttpStatusCode.BadRequest)
+                                                // .WaitAndRetryAsync(Backoff.DecorrelatedJitterBackoffV2(TimeSpan.FromSeconds(1), retryCount: 5),
+                                                // onRetry: (exception, retryCount, context) =>
+                                                // {
+                                                //     Log.Error(ErrorMessages.HttpPostRetry, exception.Exception.Message, retryCount);
+                                                // });
+                                                .RetryAsync(5, onRetry: (exception, retryCount, context) =>
+                                                {
+                                                    Log.Error(ErrorMessages.HttpPostRetry, exception.Exception.Message, retryCount);
+                                                });
 
 
 
@@ -132,20 +147,6 @@ namespace PersistentRegister.Services
             var serviceResponse = new ApiResponse<GetUserDto>();
             var watch = new Stopwatch();
 
-            //Set the Retry Policy using Polly
-            AsyncRetryPolicy<HttpResponseMessage> retryPolicy = Policy<HttpResponseMessage>
-                                                    .Handle<Exception>()
-                                                    .OrResult(x => x.StatusCode is >= HttpStatusCode.BadRequest)
-                                                    // .WaitAndRetryAsync(Backoff.DecorrelatedJitterBackoffV2(TimeSpan.FromSeconds(1), retryCount: 5),
-                                                    // onRetry: (exception, retryCount, context) =>
-                                                    // {
-                                                    //     Log.Error(ErrorMessages.HttpPostRetry, exception.Exception.Message, retryCount);
-                                                    // });
-                                                    .RetryAsync(5, onRetry: (exception, retryCount, context) =>
-                                                    {
-                                                        Log.Error(ErrorMessages.HttpPostRetry, exception.Exception.Message, retryCount);
-                                                    });
-
             try
             {
                 bool sentToEndPoint2 = false, sentToEndPoint3 = false;
@@ -183,6 +184,7 @@ namespace PersistentRegister.Services
                     userRegisterInfo.RegistrationDate = DateTime.Now;
                     userRegisterInfo.TotalPersistTime = TimeSpan.FromMilliseconds(watch.ElapsedMilliseconds);
 
+                    //Create json for EndPoints
                     var jsonUser = JsonConvert.SerializeObject(userRegisterInfo);
                     var jsonContent = new StringContent(jsonUser, Encoding.UTF8, "application/json");
 

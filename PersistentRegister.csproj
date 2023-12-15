@@ -21,10 +21,9 @@
     <PackageReference Include="Serilog.AspNetCore" Version="8.0.0" />
     <PackageReference Include="Serilog.Extensions.Logging.File" Version="3.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\ApiLibrary\ApiLibrary.csproj" />
+    <Reference Include="ApiLibrary"> 
+      <HintPath>Libraries/ApiLibrary.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

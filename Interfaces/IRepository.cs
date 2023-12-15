@@ -1,3 +1,4 @@
+using ApiLibrary.Responses;
 using PersistentRegister.Models;
 
 namespace PersistentRegister.Interfaces
