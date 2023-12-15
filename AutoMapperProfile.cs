@@ -11,7 +11,7 @@ namespace PersistentRegister
             CreateMap<User, GetUserDto>();
             CreateMap<InsertUserDto, User>();
             CreateMap<UpdateUserDto, User>();
-
+            CreateMap<User, UserRegisterInfo>().ForMember(dest => dest.UserID, opt => opt.MapFrom(src => src.ID));
         }
     }
 }
