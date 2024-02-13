@@ -29,7 +29,7 @@ During the whole lifecycle the Serilog logs some information in local .txt files
 
 - **Polly**: Used in order to establish Retry Policies when sending the events to the 
 
--**Serilog**: Used in order to keep logs of key actions throught the whole lifecycle.
+- **Serilog**: Used in order to keep logs of key actions throught the whole lifecycle.
 
 - **SOLID Principles**:
 
